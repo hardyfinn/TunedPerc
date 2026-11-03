@@ -1,0 +1,23 @@
+{
+  "slug": "TunedPerc",
+  "name": "Tuned Perc",
+  "version": "2.0.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Haer",
+  "author": "Haer",
+  "authorEmail": "",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "https://github.com/hardyfinn/tunedperc",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "TunedPerc",
+      "name": "Tuned Perc",
+      "description": "One percussion sample, tuned automatically: detects the drum's pitch, moves it to the nearest C, then plays it from V/OCT so it sits in key with the track",
+      "tags": ["Sampler", "Drum", "Tuner"]
+    }
+  ]
+}
