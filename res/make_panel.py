@@ -82,29 +82,29 @@ add(f'<rect x="3.6" y="12.6" width="{W-7.2}" height="26.8" rx="1.4" fill="#0B100
 # knobs
 for (x, y, lab, lo, hi) in [(15.5, 49.5, "OCTAVE", "-3", "+3"), (45.5, 49.5, "FINE", "-50c", "+50c"),
                              (15.5, 70.5, "DECAY", "short", "full"), (45.5, 70.5, "LEVEL", "", "")]:
-    add(text(lab, x, y - 7.2, 2.4, FONT_BOLD, INK, spacing=0.07))
-    if lo: add(text(lo, x - 7.4, y + 6.4, 1.55, FONT_MED, SOFT))
-    if hi: add(text(hi, x + 7.4, y + 6.4, 1.55, FONT_MED, SOFT))
+    add(text(lab, x, y - 7.0, 3.2, FONT_BOLD, INK, spacing=0.05))
+    if lo: add(text(lo, x - 7.6, y + 7.4, 2.6, FONT_MED, SOFT))
+    if hi: add(text(hi, x + 7.6, y + 7.4, 2.6, FONT_MED, SOFT))
 
 # switches and button
 SW_Y = 87.0
-add(text("TUNE", 11.0, SW_Y - 4.6, 1.9, FONT_BOLD, HOT))
-add(text("to C", 15.0, SW_Y - 1.0, 1.45, FONT_MED, SOFT, anchor="start"))
-add(text("as is", 15.0, SW_Y + 2.6, 1.45, FONT_MED, SOFT, anchor="start"))
-add(text("PITCH", 30.5, SW_Y - 4.6, 1.9, FONT_BOLD, INK))
-add(text("track", 34.5, SW_Y - 1.0, 1.45, FONT_MED, SOFT, anchor="start"))
-add(text("hold", 34.5, SW_Y + 2.6, 1.45, FONT_MED, SOFT, anchor="start"))
-add(text("DETECT", 51.0, SW_Y - 4.6, 1.9, FONT_BOLD, INK))
+add(text("TUNE", 11.0, SW_Y - 4.9, 2.9, FONT_BOLD, HOT))
+add(text("to C", 14.4, SW_Y - 0.6, 2.4, FONT_MED, SOFT, anchor="start"))
+add(text("as is", 14.4, SW_Y + 3.0, 2.4, FONT_MED, SOFT, anchor="start"))
+add(text("PITCH", 30.5, SW_Y - 4.9, 2.9, FONT_BOLD, INK))
+add(text("track", 33.9, SW_Y - 0.6, 2.4, FONT_MED, SOFT, anchor="start"))
+add(text("hold", 33.9, SW_Y + 3.0, 2.4, FONT_MED, SOFT, anchor="start"))
+add(text("DETECT", 51.0, SW_Y - 4.9, 2.9, FONT_BOLD, INK))
 for y in (79.0, 92.6):
     add(f'<line x1="4" y1="{y}" x2="{W-4}" y2="{y}" stroke="{BG_DARK}" stroke-width="0.5"/>')
 
 # jacks
 IN_Y, OUT_Y = 100.8, 117.4
 for x, lab in zip([10.5, 30.5, 50.5], ["TRIG", "V/OCT", "VEL"]):
-    add(text(lab, x, IN_Y - 5.4, 1.95, FONT_BOLD, HOT if lab == "V/OCT" else INK))
+    add(text(lab, x, IN_Y - 5.6, 2.9, FONT_BOLD, HOT if lab == "V/OCT" else INK))
 add(f'<rect x="3.6" y="108.6" width="{W-7.2}" height="14.6" rx="1.2" fill="{OUTBOX}"/>')
 for x, lab in zip([10.5, 30.5, 50.5], ["OUT", "ENV", "NOTE"]):
-    add(text(lab, x, OUT_Y - 5.4, 1.95, FONT_BOLD, INK))
+    add(text(lab, x, OUT_Y - 5.6, 2.9, FONT_BOLD, INK))
 
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">\n' + "\n".join(parts) + "\n</svg>\n")
 open(os.path.join(HERE, "TunedPerc.svg"), "w").write(svg)
