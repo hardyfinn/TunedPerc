@@ -32,6 +32,37 @@ static Sample drum(double rate, double seconds, double f0, std::vector<double> h
 	return s;
 }
 
+
+// A sound made of separate resonances (freq Hz, level, decay s), plus optional
+// steady noise (breath on a bottle, rattle on a can).
+struct Mode { double f, a, decay; };
+static Sample modes(double rate, double seconds, std::vector<Mode> m, double noiseLevel = 0.0, double glide = 0.0) {
+	Sample s;
+	s.rate = (int) rate;
+	int n = (int) (rate * seconds);
+	s.L.resize(n);
+	std::vector<double> ph(m.size(), 0.0);
+	for (int i = 0; i < n; i++) {
+		double t = i / rate;
+		double v = 0;
+		for (size_t k = 0; k < m.size(); k++) {
+			double f = m[k].f * (1.0 + glide * std::exp(-t / 0.03));
+			ph[k] += 2 * M_PI * f / rate;
+			v += m[k].a * std::sin(ph[k]) * std::exp(-t / m[k].decay);
+		}
+		v += 0.6 * noise() * std::exp(-t / 0.004);
+		v += noiseLevel * noise() * std::exp(-t / 0.15);
+		s.L[i] = (float) (0.4 * v);
+	}
+	s.computePeaks();
+	return s;
+}
+
+static bool samePitchClass(float a, float b, float tol) {
+	float d = std::fmod(std::fabs(a - b), 12.f);
+	return std::min(d, 12.f - d) < tol;
+}
+
 static void report(const char* what, const PitchResult& r) {
 	std::printf("  %-26s found=%d note=%6.2f (%s) conf=%.2f shift=%+.2f -> %s\n", what, r.found, r.note,
 	            noteName(r.note, true).c_str(), r.confidence, r.shift, noteName((float) r.targetC).c_str());
@@ -101,6 +132,83 @@ int main() {
 		PitchResult r2 = detectPitch(s2);
 		report("F2+60c", r2);
 		CHECK(r2.targetC == 36 && r2.shift < -5.5f && r2.shift > -6.f);
+	}
+	// 12. tom: membrane modes are not harmonics (1, 1.59, 2.14, 2.30 x f0),
+	//     with a small downward bend. The old detector gave up on these.
+	{
+		double f = 110.0;
+		Sample s = modes(44100, 0.7, {{f, 1.0, 0.25}, {f * 1.59, 0.5, 0.12}, {f * 2.14, 0.35, 0.1}, {f * 2.30, 0.3, 0.08}}, 0.0, 0.04);
+		PitchResult r = detectPitch(s);
+		report("A2 tom, membrane modes", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && std::fabs(r.note - 45.0f) < 0.3f);
+	}
+	// 13. blown bottle: one resonance with breath noise all the way through
+	{
+		Sample s = modes(44100, 0.3, {{1174.66, 1.0, 0.12}}, 0.25);
+		PitchResult r = detectPitch(s);
+		report("D6 bottle with breath", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && std::fabs(r.note - 86.0f) < 0.2f);
+	}
+	// 14. struck can: clashing metal partials, the strongest is the note
+	{
+		Sample s = modes(44100, 0.5, {{404.0, 1.0, 0.15}, {663.0, 0.3, 0.1}, {975.0, 0.45, 0.08}, {2103.0, 0.2, 0.05}}, 0.05);
+		PitchResult r = detectPitch(s);
+		report("can, 404 Hz main partial", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && std::fabs(r.note - freqToNote(404.0)) < 0.2f);
+	}
+	// 15. drum machine tom: two resonances a fifth apart, the louder one wins
+	//     (not the "virtual" note an octave and a fifth below)
+	{
+		Sample s = modes(44100, 0.5, {{95.0, 1.0, 0.18}, {65.0, 0.45, 0.2}});
+		PitchResult r = detectPitch(s);
+		report("tom 95 Hz + 65 Hz", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && std::fabs(r.note - freqToNote(95.0)) < 0.25f);
+	}
+	// 16. bass hit with a missing fundamental: only harmonics 2, 3, 5, 6, 9 of C1
+	{
+		double f = 32.703;
+		Sample s = modes(44100, 0.8, {{2 * f, 0.6, 0.4}, {3 * f, 1.0, 0.4}, {5 * f, 0.35, 0.3}, {6 * f, 0.7, 0.3}, {9 * f, 0.35, 0.2}});
+		PitchResult r = detectPitch(s);
+		report("C1 bass, no fundamental", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && samePitchClass(r.note, 24.0f, 0.2f));
+	}
+	// 17. tabla-like: harmonics 2-6 of D#4, fundamental silent. The note
+	//     name must be D# (the octave does not change the shift to C).
+	{
+		double f = 311.13;
+		Sample s = modes(44100, 0.8, {{2 * f, 0.7, 0.3}, {3 * f, 1.0, 0.3}, {4 * f, 0.15, 0.2}, {5 * f, 0.1, 0.15}, {6 * f, 0.05, 0.1}});
+		PitchResult r = detectPitch(s);
+		report("tabla-like, D# harmonics", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && samePitchClass(r.note, 63.0f, 0.2f));
+	}
+	// 18. 30 ms square blip at G6
+	{
+		Sample s;
+		s.rate = 44100;
+		for (int i = 0; i < 44100 / 4; i++) {
+			double t = i / 44100.0;
+			double v = std::sin(2 * M_PI * 1567.98 * t) > 0 ? 1.0 : -1.0;
+			s.L.push_back((float) (0.8 * v * std::exp(-t / 0.006)));
+		}
+		s.computePeaks();
+		PitchResult r = detectPitch(s);
+		report("30 ms G6 blip", r);
+		CHECK(r.found && r.confidence >= MIN_CONFIDENCE && samePitchClass(r.note, 91.0f, 0.3f));
+	}
+	// 19. a clap (noise bursts) and a hat with a faint hum in the tail stay untuned
+	{
+		Sample s;
+		s.rate = 44100;
+		for (int i = 0; i < 44100 / 2; i++) {
+			double t = i / 44100.0;
+			double env = 0;
+			for (int b = 0; b < 4; b++) if (t >= b * 0.011) env += std::exp(-(t - b * 0.011) / (b == 3 ? 0.06 : 0.004));
+			s.L.push_back((float) (0.4 * noise() * env + 0.003 * std::sin(2 * M_PI * 50 * t)));
+		}
+		s.computePeaks();
+		PitchResult r = detectPitch(s);
+		report("clap with 50 Hz hum", r);
+		CHECK(!r.found || r.confidence < MIN_CONFIDENCE);
 	}
 	// 8. playback: +12 semitones plays the sample in half the time
 	{
