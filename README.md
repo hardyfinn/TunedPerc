@@ -46,17 +46,36 @@ follow the same sequence as your bass or chords.
   red, and the sample plays as recorded ("no clear pitch").
 - **Big line**: the detected note and cents, then the C it is moved to and by
   how many semitones.
-- **Waveform**: the teal band is the part the detector listened to (the first
-  15 ms of the attack are skipped). The yellow line is the pitch over time
+- **Waveform**: the teal band is the part the detector listened to (the click
+  at the very start of the attack is skipped). The yellow line is the pitch over time
   (+-1 octave fills the height), so an 808 glide shows as a falling line.
 - **Bottom line**: the note playing now, and the OCTAVE and FINE settings.
 
 ## How the pitch is found
 
-The detector skips the click of the attack, cuts the rest into short
-overlapping frames, and runs the YIN method on each: it finds the period at
-which the waveform best repeats itself and how cleanly it repeats. Frames with
-a clean repeat are kept, and the answer is a loudness-weighted median of them.
+Most drums don't repeat their waveform exactly: a tom, bottle, can or tabla
+rings at a few resonances that aren't whole-number multiples of each other,
+and the sound bends and fades while it rings. So since version 2.2 the
+detector listens to the spectrum instead:
+
+1. It skips the click of the attack and cuts the rest into overlapping frames
+   (up to 190 ms long, so even a 30 Hz kick is placed to a few cents; shorter
+   for sounds that only ring briefly).
+2. In each frame it finds the **resonances**: sharp peaks that stand well
+   above the noise around them. A frame counts as pitched when most of its
+   energy sits in resonances.
+3. The frame's note is the **strongest resonance**, or the fundamental of a
+   harmonic series when the peaks form one: a bright saw lands on its root,
+   and a bass hit whose fundamental is weak or missing (only the 2nd, 3rd,
+   5th... harmonics) still gets the right note.
+4. The answer is a loudness-weighted median of the pitched frames. How sure
+   it is depends on how much of the sound is pitched and how well the frames
+   agree.
+5. If that finds nothing, the older waveform-repeat method (YIN) gets a second
+   try, which suits very short synth blips.
+
+On a test set of 415 real drum samples this tunes 309, up from 263 in
+version 2.1, while hats, claps and stomps are still left alone.
 
 **Listen to** in the right-click menu chooses which part counts:
 

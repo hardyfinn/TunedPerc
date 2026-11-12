@@ -14,8 +14,6 @@
 
 using namespace tp;
 
-static const float MIN_CONFIDENCE = 0.4f;
-
 // A loaded sample with its analysis. Never changed after it is published.
 struct Loaded {
 	std::string path;
@@ -327,7 +325,7 @@ struct PercDisplay : Widget {
 			nvgBeginPath(vg);
 			bool started = false;
 			for (const PitchFrame& f : p.frames) {
-				if (f.clarity < 0.75f) { started = false; continue; }
+				if (f.clarity < p.clearAt) { started = false; continue; }
 				float x = wx + ww * std::min(1.f, f.time / dur);
 				float y = wy + wh * 0.5f - clamp((f.note - p.note) / 12.f, -1.f, 1.f) * wh * 0.45f;
 				if (!started) nvgMoveTo(vg, x, y);
