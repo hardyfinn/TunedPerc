@@ -41,3 +41,10 @@ jobs:
         run: |
           gh release view latest >/dev/null 2>&1 || gh release create latest --title "Latest build" --notes "Built automatically from main."
           gh release upload latest dist/*.vcvplugin --clobber
+      - name: Publish branch builds to the "preview" release
+        if: github.ref != 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view preview >/dev/null 2>&1 || gh release create preview --prerelease --title "Preview build" --notes "Built by hand from a branch, for trying changes before they are merged."
+          gh release upload preview dist/*.vcvplugin --clobber
