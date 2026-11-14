@@ -109,3 +109,9 @@ for x, lab in zip([10.5, 30.5, 50.5], ["OUT", "ENV", "NOTE"]):
 svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" viewBox="0 0 {W} {H}">\n' + "\n".join(parts) + "\n</svg>\n")
 open(os.path.join(HERE, "TunedPerc.svg"), "w").write(svg)
 print("ok")
+
+# --- Haer maker logo (res/haer_logo.py), placed clear of the jacks and rail artwork
+import os as _os, sys as _sys
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import haer_logo
+haer_logo.add_to_file(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "TunedPerc.svg"), x=30.39, y=126.0, cap=3.0, bg='#1F2B2A')
