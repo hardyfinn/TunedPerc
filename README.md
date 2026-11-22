@@ -112,3 +112,7 @@ build locally, download the Rack SDK and run
 - `src/SampleFile.hpp`: WAV and AIFF reading.
 - `test/engine_test.cpp`: `c++ -std=c++11 -O2 -o test/engine_test test/engine_test.cpp && test/engine_test`
 - `res/make_panel.py` draws the panel; `tools/preview.py` renders `panel-preview.png`.
+
+## Licence
+
+MIT (see `LICENSE.txt`): you're free to use, change, port (VST/CLAP, other platforms, hardware) and share this code, as long as the copyright notice and licence text come along. Fonts on the panel (Inter, Climate Crisis) are under the SIL Open Font Licence.
