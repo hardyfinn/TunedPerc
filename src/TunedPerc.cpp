@@ -79,7 +79,7 @@ struct TunedPerc : Module {
 		getParamQuantity(OCTAVE_PARAM)->snapEnabled = true;
 		configParam(FINE_PARAM, -50.f, 50.f, 0.f, "Fine", " cents");
 		configParam<DecayQuantity>(DECAY_PARAM, 0.f, 1.f, 1.f, "Decay");
-		configParam<LevelQuantity>(LEVEL_PARAM, 0.f, 1.f, 0.7071f, "Level");
+		configParam<LevelQuantity>(LEVEL_PARAM, 0.f, 1.f, 0.7071f, "Level")->randomizeEnabled = false;
 		configSwitch(TUNE_PARAM, 0.f, 1.f, 1.f, "Tune", {"As is (no tuning)", "To C"});
 		configSwitch(TRACK_PARAM, 0.f, 1.f, 0.f, "Pitch", {"Hold (V/OCT taken when each hit starts)", "Track (follows V/OCT during the hit)"});
 		configButton(DETECT_PARAM, "Detect the pitch again");
